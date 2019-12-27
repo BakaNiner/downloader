@@ -13,6 +13,8 @@ import ctypes
 flag = 1
 #http://down.kuwo.cn/mbox/kwmusic_w1_bds_20191213.exe
 #http://down.sandai.net/thunderx/XunLeiWebSetup10.1.26.618gw.exe
+#https://dldir1.qq.com/weixin/Windows/WeChat_C1018.exe
+#http://xmp.down.sandai.net/xmp/XMPSetup6.1.2.650xmpgw.exe
 
  
 item_list = []

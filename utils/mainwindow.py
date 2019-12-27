@@ -8,7 +8,7 @@ import time
 class ui_item:
     cnt = 0
 
-    def __init__(self, url, mode, gid, a, t, percent, status, path="C:/Users/Chen/Desktop/Download"):
+    def __init__(self, url, mode, gid, a, t, percent, status, path="C:/Users/15112/Desktop/Download"):
         self.url = url
         self.mode = mode
         self.path = path
@@ -74,7 +74,7 @@ class myThread(QtCore.QThread) :
                     self.signal_update.emit(str(item.gid), percent)
                 #   if (percent < 95) : #在接近下载完成的时候getpercent可能无法正常返回值！
                 #       progress_dic[item.gid].setValue(percent)
-                if active == 0 and item.status != 'stopped':
+                elif active == 0 and item.status != 'stopped':
                     item.status = 'complete'
                     item.modify = 0
             if item.status == 'complete' and item.modify == 0:
@@ -84,8 +84,8 @@ class myThread(QtCore.QThread) :
     def run(self):
         iter = 0
         interval = 0.5
-        maxiter = 500
-        while flag == 1 and iter < maxiter:
+        #maxiter = 50
+        while flag == 1:
             self.check_completed()
             # print_progress(a)
            # self.print_itemlist()
@@ -93,6 +93,7 @@ class myThread(QtCore.QThread) :
 
             # print("sleep for %f seconds" % interval)
             time.sleep(interval)
+
 
 class Ui_MainWindow(object):
     def __init__(self, mainwindow):
@@ -104,8 +105,8 @@ class Ui_MainWindow(object):
         self.mythread = myThread(self.aria)
         self.mythread.signal_update.connect(self.Update)
         self.mythread.signal_complete.connect(self.complete)
-        self.load_itemlist()
         self.mythread.start()
+        self.load_itemlist()        
        # self.mythread.start()
         print("startAria:"+ str(self.aria))
 
@@ -137,7 +138,7 @@ class Ui_MainWindow(object):
                         self.cnt = self.cnt + 1
                         #print("load_itemlist: ", item.a.taskStatus)
                         success, downloaditem, item_1 = self.myDownloadBar_2(item_list[i].url, item_list[i].mode, item_list[i].a, item_list[i].t, item_list[i].gid, success=1, append=0)
-                        item_list[i].precent = getPercent(item.a, item_list[i].gid)
+                        #item_list[i].precent = getPercent(item.a, item_list[i].gid)
                         progress_dic[str(item_list[i].gid)].setValue(item_list[i].percent)
                         #progress_dic[item_list[i].gid].setValue(getPercent(item_list[i].a,item_list[i].gid))
                         #bar_dic[item_list[i].gid].update()
@@ -146,11 +147,19 @@ class Ui_MainWindow(object):
                         progress_dic[str(item_list[i].gid)].setValue(item_list[i].percent)
 
                     if item_list[i].status == 'complete' :
-                        pause_dic[str(item.gid)].setEnabled(False)
-                        cancel_dic[str(item.gid)].setEnabled(False)
-                        progress_dic[str(item.gid)].setValue(100)
-                        X_dic[str(item.gid)].setEnabled(True)
+                        pause_dic[str(item_list[i].gid)].setEnabled(False)
+                        cancel_dic[str(item_list[i].gid)].setEnabled(False)
+                        progress_dic[str(item_list[i].gid)].setValue(100)
+                        X_dic[str(item_list[i].gid)].setEnabled(True)
                         #bar_dic[str(item.gid)].update()
+                        
+                    if item_list[i].status == 'stopped' :
+                        pause_dic[str(item_list[i].gid)].setEnabled(False)
+                        cancel_dic[str(item_list[i].gid)].setEnabled(False)
+                        #progress_dic[str(item.gid)].setValue(100)
+                        X_dic[str(item_list[i].gid)].setEnabled(True)
+                        
+                        
                     if success == 0:
                         return
                     
@@ -158,8 +167,8 @@ class Ui_MainWindow(object):
                     self.DownloadList.addItem(item_1)
                     self.DownloadList.setItemWidget(item_1, downloaditem)
                     downloaditem.show()
-        if (self.cnt > 0) :
-            self.mythread.start()
+#        if (self.cnt > 0) :
+#            self.mythread.start()
         
                 
     # 开始下载的代码，这是按下主界面的下载键后会调用的代码
@@ -338,6 +347,8 @@ class Ui_MainWindow(object):
         # item_list.append(ui_item(url, mode, gid, a, t, status))
         item_data = [a, t, gid]
         print("myDownloadBar_2: ", a.taskStatus)
+        print_itemlist()
+        print("pause_dic is ", pause_dic)
         Cancel.clicked.connect(lambda: self.onCancelClicked(item_data))
         Delete.clicked.connect(lambda: self.onDeleteClicked(item, item_data))
         StartPause.clicked.connect(lambda: self.onStartPauseClicked(StartPause, item_data))
@@ -351,6 +362,9 @@ class Ui_MainWindow(object):
     def debug_print(self):
         for item in item_list:
             print(item.gid, item.status)
+            
+        gidList, statusList = self.aria.tellActive()
+        print(gidList, statusList)
 
     def onStartPauseClicked(self, StartPause, item_data):
         StartPause.setEnabled(False)
@@ -387,15 +401,16 @@ class Ui_MainWindow(object):
                     item.status = status  # 更新前端队列status
                     break
         self.debug_print()
+        
 
-    def onCancelClicked(self, item_data,gid):
+    def onCancelClicked(self, item_data):
         print("cancelClicked in")
         status = 0
         for item in item_list:
             if item.gid == item_data[2]:
                 status = item.status
                 break
-            
+        gid = item_data[2]
         print("status is %s"%status)
         if status == 'downloading' :
             status, gid = unpauseDownload(item_data[0], item_data[2])  # (a, gid)
@@ -409,12 +424,13 @@ class Ui_MainWindow(object):
         elif status == 0:
             print("zgq: not found this gid in item_list")
 
-        X_dic[gid].setEnabled(True)
-        pause_dic[gid].setEnabled(False)
+        X_dic[str(gid)].setEnabled(True)
+        pause_dic[str(gid)].setEnabled(False)
+        cancel_dic[str(gid)].setEnabled(False)
         #bar_dic[gid].update()
         print("cancelClicked called")
         a = item_data[0]
-        gid = item_data[2]
+        #gid = item_data[2]
         _, statusList = a.tellActive()
 
         flag = True
