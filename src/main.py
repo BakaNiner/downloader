@@ -86,7 +86,7 @@ if __name__ == '__main__':
 	# res = aria_pointer.startAria()
 	mainwindows = myMainwindow(aria_pointer)
 	# print("debug+:" + str(aria_pointer))
-	ui = mainwindows.Ui_MainWindow(mainwindows)
+	ui = mainwindow.Ui_MainWindow(mainwindows)
 	mainwindows.show()
 	# maxiter = 500
 

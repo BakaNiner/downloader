@@ -7,7 +7,7 @@ import time
 class ui_item:
 	cnt = 0
 
-	def __init__(self, url, mode, gid, a, t, percent, status, path = "C:/Users/15112/Desktop/Download"):
+	def __init__(self, url, mode, gid, a, t, percent, status, path = "D:/"):
 		self.url = url
 		self.mode = mode
 		self.path = path
