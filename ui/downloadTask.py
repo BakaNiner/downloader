@@ -411,7 +411,7 @@ class Ui_task(object):
         self.StartPause.setObjectName("StartPause")
         self.Cancel = QtWidgets.QPushButton(task)
         self.Cancel.setGeometry(QtCore.QRect(790, 15, 40, 40))
-        self.Cancel.setStyleSheet("border-image: url(:/Breeze-Dark/remove.svg);")
+        self.Cancel.setStyleSheet("border-image: url(:/Breeze-Dark/stop.svg);")
         self.Cancel.setText("")
         self.Cancel.setObjectName("Cancel")
         self.Delete = QtWidgets.QPushButton(task)

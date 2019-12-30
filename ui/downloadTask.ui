@@ -447,7 +447,7 @@ QLabel
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">border-image: url(:/Breeze-Dark/remove.svg);</string>
+    <string notr="true">border-image: url(:/Breeze-Dark/stop.svg);</string>
    </property>
    <property name="text">
     <string/>
