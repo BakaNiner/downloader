@@ -1,0 +1,149 @@
+<RCC>
+  <qresource prefix="/">
+    <file>Breeze/about.svg</file>
+    <file>Breeze/add.svg</file>
+    <file>Breeze/exit.svg</file>
+    <file>Breeze/folder.svg</file>
+    <file>Breeze/minimize.svg</file>
+    <file>Breeze/ok.svg</file>
+    <file>Breeze/pause.svg</file>
+    <file>Breeze/play.svg</file>
+    <file>Breeze/preferences.svg</file>
+    <file>Breeze/remove.svg</file>
+    <file>Breeze/setting.svg</file>
+    <file>Breeze/stop.svg</file>
+    <file>Breeze/stop_all.svg</file>
+    <file>Breeze/trash.svg</file>
+    <file>Breeze/window.svg</file>
+    <file>Breeze/file.svg</file>
+    <file>Breeze/multi_remove.svg</file>
+    <file>Breeze/multi_trash.svg</file>
+    <file>Breeze/select_all.svg</file>
+    <file>Breeze/add_queue.svg</file>
+    <file>Breeze/start_queue.svg</file>
+    <file>Breeze/stop_queue.svg</file>
+    <file>Breeze/pause_queue.svg</file>
+    <file>Breeze/remove_queue.svg</file>
+    <file>Breeze/menu.svg</file>
+    <file>Breeze/up.svg</file>
+    <file>Breeze/down.svg</file>
+    <file>Breeze/multi_up.svg</file>
+    <file>Breeze/multi_down.svg</file>
+    <file>Breeze/clipboard.svg</file>
+    <file>Breeze/refresh.svg</file>
+    <file>Breeze/video_finder.svg</file>
+    <file>Breeze-Dark/about.svg</file>
+    <file>Breeze-Dark/add.svg</file>
+    <file>Breeze-Dark/exit.svg</file>
+    <file>Breeze-Dark/folder.svg</file>
+    <file>Breeze-Dark/minimize.svg</file>
+    <file>Breeze-Dark/ok.svg</file>
+    <file>Breeze-Dark/pause.svg</file>
+    <file>Breeze-Dark/play.svg</file>
+    <file>Breeze-Dark/preferences.svg</file>
+    <file>Breeze-Dark/remove.svg</file>
+    <file>Breeze-Dark/setting.svg</file>
+    <file>Breeze-Dark/stop.svg</file>
+    <file>Breeze-Dark/stop_all.svg</file>
+    <file>Breeze-Dark/trash.svg</file>
+    <file>Breeze-Dark/window.svg</file>
+    <file>Breeze-Dark/file.svg</file>
+    <file>Breeze-Dark/multi_remove.svg</file>
+    <file>Breeze-Dark/multi_trash.svg</file>
+    <file>Breeze-Dark/select_all.svg</file>
+    <file>Breeze-Dark/add_queue.svg</file>
+    <file>Breeze-Dark/start_queue.svg</file>
+    <file>Breeze-Dark/stop_queue.svg</file>
+    <file>Breeze-Dark/pause_queue.svg</file>
+    <file>Breeze-Dark/remove_queue.svg</file>
+    <file>Breeze-Dark/menu.svg</file>
+    <file>Breeze-Dark/up.svg</file>
+    <file>Breeze-Dark/down.svg</file>
+    <file>Breeze-Dark/multi_up.svg</file>
+    <file>Breeze-Dark/multi_down.svg</file>
+    <file>Breeze-Dark/clipboard.svg</file>
+    <file>Breeze-Dark/refresh.svg</file>
+    <file>Breeze-Dark/video_finder.svg</file>
+    <file>Papirus/about.svg</file>
+    <file>Papirus/add.svg</file>
+    <file>Papirus/exit.svg</file>
+    <file>Papirus/folder.svg</file>
+    <file>Papirus/minimize.svg</file>
+    <file>Papirus/ok.svg</file>
+    <file>Papirus/pause.svg</file>
+    <file>Papirus/play.svg</file>
+    <file>Papirus/preferences.svg</file>
+    <file>Papirus/remove.svg</file>
+    <file>Papirus/setting.svg</file>
+    <file>Papirus/stop.svg</file>
+    <file>Papirus/stop_all.svg</file>
+    <file>Papirus/trash.svg</file>
+    <file>Papirus/window.svg</file>
+    <file>Papirus/file.svg</file>
+    <file>Papirus/multi_remove.svg</file>
+    <file>Papirus/multi_trash.svg</file>
+    <file>Papirus/select_all.svg</file>
+    <file>Papirus/add_queue.svg</file>
+    <file>Papirus/start_queue.svg</file>
+    <file>Papirus/stop_queue.svg</file>
+    <file>Papirus/pause_queue.svg</file>
+    <file>Papirus/remove_queue.svg</file>
+    <file>Papirus/menu.svg</file>
+    <file>Papirus/up.svg</file>
+    <file>Papirus/down.svg</file>
+    <file>Papirus/multi_up.svg</file>
+    <file>Papirus/multi_down.svg</file>
+    <file>Papirus/clipboard.svg</file>
+    <file>Papirus/refresh.svg</file>
+    <file>Papirus/video_finder.svg</file>
+    <file>Papirus-Dark/about.svg</file>
+    <file>Papirus-Dark/add.svg</file>
+    <file>Papirus-Dark/exit.svg</file>
+    <file>Papirus-Dark/folder.svg</file>
+    <file>Papirus-Dark/minimize.svg</file>
+    <file>Papirus-Dark/ok.svg</file>
+    <file>Papirus-Dark/pause.svg</file>
+    <file>Papirus-Dark/play.svg</file>
+    <file>Papirus-Dark/preferences.svg</file>
+    <file>Papirus-Dark/remove.svg</file>
+    <file>Papirus-Dark/setting.svg</file>
+    <file>Papirus-Dark/stop.svg</file>
+    <file>Papirus-Dark/stop_all.svg</file>
+    <file>Papirus-Dark/trash.svg</file>
+    <file>Papirus-Dark/window.svg</file>
+    <file>Papirus-Dark/file.svg</file>
+    <file>Papirus-Dark/multi_remove.svg</file>
+    <file>Papirus-Dark/multi_trash.svg</file>
+    <file>Papirus-Dark/select_all.svg</file>
+    <file>Papirus-Dark/add_queue.svg</file>
+    <file>Papirus-Dark/start_queue.svg</file>
+    <file>Papirus-Dark/stop_queue.svg</file>
+    <file>Papirus-Dark/pause_queue.svg</file>
+    <file>Papirus-Dark/remove_queue.svg</file>
+    <file>Papirus-Dark/menu.svg</file>
+    <file>Papirus-Dark/up.svg</file>
+    <file>Papirus-Dark/down.svg</file>
+    <file>Papirus-Dark/multi_up.svg</file>
+    <file>Papirus-Dark/multi_down.svg</file>
+    <file>Papirus-Dark/clipboard.svg</file>
+    <file>Papirus-Dark/refresh.svg</file>
+    <file>Papirus-Dark/video_finder.svg</file>
+    <file>dark_style.qss</file>
+    <file>dark fusion/down_arrow_disabled.svg</file>
+    <file>dark fusion/down_arrow.svg</file>
+    <file>dark fusion/down_arrow_hover.svg</file>
+    <file>dark fusion/up_arrow_disabled.svg</file>
+    <file>dark fusion/up_arrow.svg</file>
+    <file>dark fusion/up_arrow_hover.svg</file>
+    <file>dark fusion/left_arrow.svg</file>
+    <file>dark fusion/left_arrow_disabled.svg</file>
+    <file>dark fusion/right_arrow.svg</file>
+    <file>dark fusion/right_arrow_disabled.svg</file>
+    <file>dark fusion/checkbox_checked_disabled.svg</file>
+    <file>dark fusion/checkbox_checked.svg</file>
+    <file>dark fusion/checkbox_indeterminate_disabled.svg</file>
+    <file>dark fusion/checkbox_indeterminate.svg</file>
+    <file>dark fusion/checkbox_unchecked_disabled.svg</file>
+    <file>dark fusion/checkbox_unchecked.svg</file>
+  </qresource>
+</RCC>
