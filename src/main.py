@@ -1,7 +1,7 @@
 import os
 import pickle
 import mainwindow
-from download import *
+from downloadWrapper import *
 from PyQt5 import QtWidgets
 import sys
 import time

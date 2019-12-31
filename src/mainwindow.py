@@ -1,33 +1,27 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMessageBox
-from download import *
+from downloadWrapper import *
 from main import *
 import time
 
 class ui_item:
 	cnt = 0
 
-	def __init__(self, url, mode, gid, a, t, percent, status, path = "D:/test"):
-		self.url = url
-		self.mode = mode
-		self.path = path
-		self.gid = gid
-		self.a = a
+	def __init__(self, name, t, gid, percent, status):
+		self.name = name
 		self.t = t
+		self.gid = gid
 		self.percent = percent
 		self.status = status
 		ui_item.cnt += 1
 
 def getPercent(a, gid):
-	v = 0
-	_, statusList = a.tellActive()
-	for s in statusList:
-		if s['gid'] == gid:
-			v = s['percent']
-			if v == None:  # v = None 意味着下载还没开始，进度0
-				v = 0
-			else:
-				v = int(v[0:-1])  # 去掉百分号
+	status = a.tellStatus(gid)
+	v = status['percent']
+	if v is None:  # v = None 意味着文件大小未知，进度0
+		v = 0
+	else:
+		v = int(v[0:-1])  # 去掉百分号
 	return v
 
 def print_progress(a):
@@ -39,7 +33,7 @@ def print_progress(a):
 			if (active_gid in progress_dic.keys()):
 				pass
 				# progress_dic[active_gid].setValue(percent)
-			print("zgq: percent for %s is %d" % (active_gid, percent))
+			# print("zgq: percent for %s is %d" % (active_gid, percent))
 			for item in item_list:
 				if item.gid == active_gid:
 					item.percent = percent
@@ -54,7 +48,6 @@ class myThread(QtCore.QThread):
 
 	def check_completed(self):
 		a = self.a
-		# _, statusList = a.tellActive()
 		active_gid_list, _ = a.tellActive()
 		for item in item_list:
 			if item.status == 'downloading':
@@ -62,25 +55,19 @@ class myThread(QtCore.QThread):
 					percent = getPercent(a, item.gid)
 					item.percent = percent
 					self.signal_update.emit(str(item.gid), percent)
-				#   if (percent < 95) : #在接近下载完成的时候getpercent可能无法正常返回值！
-				#       progress_dic[item.gid].setValue(percent)
 				else:
-					item.status = a.tellStatus(item.gid)
-			if item.status == 'complete' and item.modify == 0:
-				time.sleep(0.4)
-				self.signal_complete.emit(str(item.gid))
-				item.modify = 1
+					statusDict = a.tellStatus(item.gid)
+					item.status = statusDict["status"]
+					if item.status == 'complete':
+						time.sleep(0.4)
+						self.signal_complete.emit(str(item.gid))
 
 	def run(self):
-		iter = 0
 		interval = 0.5
-		# maxiter = 50
 		while flag == 1:
 			self.check_completed()
 			# print_progress(a)
 			# self.print_itemlist()
-			iter = iter + 1
-
 			# print("sleep for %f seconds" % interval)
 			time.sleep(interval)
 
@@ -90,7 +77,7 @@ class Ui_MainWindow(object):
 		self.cnt = 0
 		self.aria = mainwindow.aria_pointer
 		self.setupUi(mainwindow)
-		self.begin.clicked.connect(self.Begin)
+		self.begin.released.connect(self.Begin)
 		self.mythread = myThread(self.aria)
 		self.mythread.signal_update.connect(self.Update)
 		self.mythread.signal_complete.connect(self.complete)
@@ -103,13 +90,13 @@ class Ui_MainWindow(object):
 		cancel_dic[gid].setEnabled(False)
 		X_dic[gid].setEnabled(True)
 		progress_dic[gid].setValue(100)
-		progress_dic.pop(gid)
+		# progress_dic.pop(gid)
 		pause_dic[gid].setEnabled(False)
 		bar_dic[gid].repaint()
 
 	def Update(self, gid, percent):
-		progress_dic[str(gid)].setValue(percent)
-		bar_dic[str(gid)].repaint()
+		progress_dic[gid].setValue(percent)
+		bar_dic[gid].repaint()
 
 	def load_itemlist(self):
 		curDir = os.path.dirname(sys.argv[0])
@@ -118,7 +105,6 @@ class Ui_MainWindow(object):
 			with open(ItemListPath, "rb") as f:
 				temp_list = pickle.load(f)
 				for item in temp_list:
-					item.a = self.aria
 					item_list.append(item)
 				# print("load_itemlist_1: ", self.aria.taskStatus)
 				print("the length of item_list is", len(item_list))
@@ -126,16 +112,14 @@ class Ui_MainWindow(object):
 					if item_list[i].status == 'paused':
 						self.cnt = self.cnt + 1
 						# print("load_itemlist: ", item.a.taskStatus)
-						success, downloaditem, item_1 = self.myDownloadBar_2(item_list[i].url, item_list[i].mode,
-																			 item_list[i].a, item_list[i].t,
+						success, downloaditem, item_1 = self.myDownloadBar_2(item_list[i].name, item_list[i].t,
 																			 item_list[i].gid, success = 1, append = 0)
 						# item_list[i].precent = getPercent(item.a, item_list[i].gid)
 						progress_dic[str(item_list[i].gid)].setValue(item_list[i].percent)
 						# progress_dic[item_list[i].gid].setValue(getPercent(item_list[i].a,item_list[i].gid))
 						# bar_dic[item_list[i].gid].update()
 					else:
-						success, downloaditem, item_1 = self.myDownloadBar(item_list[i].url, item_list[i].mode,
-																		   item_list[i].a, item_list[i].t,
+						success, downloaditem, item_1 = self.myDownloadBar(item_list[i].name, item_list[i].t,
 																		   item_list[i].gid, success = 1, append = 0)
 						progress_dic[str(item_list[i].gid)].setValue(item_list[i].percent)
 
@@ -170,29 +154,25 @@ class Ui_MainWindow(object):
 			return
 		else:
 			url = self.urlLine.text()
-		#    if self.BitTorrent.isChecked():
-		#        mode = "BitTorrent"
-		#    if self.Magnet.isChecked():
-		#        mode = "Magnet"
-		mode = self.Partition.currentText()
-		mode = int(mode)
-		# 以上提取了url和mode，创建一个前端的行和一个对应的下载器
+		split = self.Partition.currentText()
+		split = int(split)
 		self.cnt = self.cnt + 1
-		houzhui = '%d' % self.cnt
-		out = 'test_' + houzhui + '.exe'
-		print("Begin_1: ", self.aria.taskStatus)
-		a, t, gid, success = startDownload(self.aria, url, mode, out)
-		print("Begin_2: ", a.taskStatus)
-		print(item_list)
+		# houzhui = '%d' % self.cnt
+		# out = 'test_' + houzhui + '.exe'
+		out = url.rsplit('/', 1)[-1]
+		# print("Begin_1: ", self.aria.taskStatus)
+		t, gid, success = startDownload(self.aria, url, split, out)
+		# print("Begin_2: ", a.taskStatus)
+		# print(item_list)
 
 		if success == 1:
-			success, downloaditem, item = self.myDownloadBar(url, mode, a, t, gid, success)
+			success, downloaditem, item = self.myDownloadBar(out, t, gid, success)
 		elif success == 2:
-			reply = QMessageBox.information(self.begin, 'Error', '已有同名的下载任务正在进行或完成！', QMessageBox.Yes, QMessageBox.Yes)
+			reply = QMessageBox.information(self.begin, 'Error', '已有同名文件！', QMessageBox.Yes, QMessageBox.Yes)
 			return
 		# 判断有没有创建成功，比如url有没有出错之类的
 		if success == 0:
-			reply = QMessageBox.information(self.begin, 'Error', ' Download Failed,Check Your Url or Restart!',
+			reply = QMessageBox.information(self.begin, 'Error', '开始任务失败，请检查下载链接并重新尝试！',
 											QMessageBox.Yes, QMessageBox.Yes)
 			return
 		self.DownloadList.addItem(item)
@@ -200,7 +180,7 @@ class Ui_MainWindow(object):
 		downloaditem.show()
 
 	# 这是为mainwindow加入每一项的代码
-	def myDownloadBar(self, url, mode, a, t, gid, success, append = 1):
+	def myDownloadBar(self, name, t, gid, success, append = 1):
 		bar = QtWidgets.QWidget()
 		layout_main = QtWidgets.QHBoxLayout()
 		layout_right = QtWidgets.QVBoxLayout()
@@ -208,7 +188,6 @@ class Ui_MainWindow(object):
 		layout_lefttop = QtWidgets.QHBoxLayout()
 		layout_leftdown = QtWidgets.QHBoxLayout()
 		StartPause = QtWidgets.QPushButton()
-		# StartPause.clicked.connect(self.startandpause)
 		StartPause.setText("Pause")
 		pause_dic[gid] = StartPause
 		Cancel = QtWidgets.QPushButton()
@@ -223,7 +202,7 @@ class Ui_MainWindow(object):
 		layout_right.addWidget(Cancel)
 		layout_right.addWidget(Delete)
 		filename = QtWidgets.QLabel()
-		filename.setText(url)
+		filename.setText(name)
 		filename.setGeometry(QtCore.QRect(0, 10, 341, 21))
 		layout_lefttop.addWidget(filename)
 		progress = QtWidgets.QLabel()
@@ -243,36 +222,25 @@ class Ui_MainWindow(object):
 		item.setSizeHint(QtCore.QSize(700, 120))
 		# 以上是初始化UI，不用管 ,下面的代码需要关注一下，是ui和后端交互的内容#
 
-		# 针对相应的url和mode创建下载器
-		# 如果创建失败的话可以直接返回
-
-		# a, t, gid, success = startDownload(self.aria, url)  # 调用Download函数创建下载任务，返回data = [a, t, gid]
-		_, statusList = a.tellActive()
-		status = 0
 		if append == 1:
-			if statusList is not None:
-				for s in statusList:
-					if s['gid'] == gid:
-						status = s['status']
-
-				item_list.append(ui_item(url, mode, gid, a, t, 0, status))
+			statusDict = self.aria.tellStatus(gid)
+			status = statusDict["status"]
+			item_list.append(ui_item(name, t, gid, 0, status))
 
 		# print("myDownloadBar:")
 		# print(a, t, gid, status)
 
-		# item_list.append(ui_item(url, mode, gid, a, t, status))
-		item_data = [a, t, gid]
-		Cancel.clicked.connect(lambda: self.onCancelClicked(item_data))
-		Delete.clicked.connect(lambda: self.onDeleteClicked(item, item_data))
-		StartPause.clicked.connect(lambda: self.onStartPauseClicked(StartPause, item_data))
+		item_data = [gid, t]
+		Cancel.released.connect(lambda: self.onCancelReleased(item_data))
+		Delete.released.connect(lambda: self.onDeleteReleased(item, item_data))
+		StartPause.released.connect(lambda: self.onStartPauseReleased(StartPause, item_data))
 		# 这是把对cancel和startpause两个按键的按这个操作和相应的代码连接起来，处理后面的两个相应的函数就行了
 
 		# 这句代码是要根据url和mode创建一个该bar对应的下载任务，先暂时挂个url在这里
-
 		return success, bar, item
 
 	# for paused item
-	def myDownloadBar_2(self, url, mode, a, t, gid, success, append = 1):
+	def myDownloadBar_2(self, name, t, gid, success, append = 1):
 		bar = QtWidgets.QWidget()
 
 		layout_main = QtWidgets.QHBoxLayout()
@@ -281,7 +249,6 @@ class Ui_MainWindow(object):
 		layout_lefttop = QtWidgets.QHBoxLayout()
 		layout_leftdown = QtWidgets.QHBoxLayout()
 		StartPause = QtWidgets.QPushButton()
-		# StartPause.clicked.connect(self.startandpause)
 		StartPause.setText("Continue")
 		pause_dic[gid] = StartPause
 		Cancel = QtWidgets.QPushButton()
@@ -295,7 +262,7 @@ class Ui_MainWindow(object):
 		layout_right.addWidget(Cancel)
 		layout_right.addWidget(Delete)
 		filename = QtWidgets.QLabel()
-		filename.setText(url)
+		filename.setText(name)
 		filename.setGeometry(QtCore.QRect(0, 10, 341, 21))
 		layout_lefttop.addWidget(filename)
 		progress = QtWidgets.QLabel()
@@ -316,35 +283,21 @@ class Ui_MainWindow(object):
 		bar_dic[gid] = bar
 		# 以上是初始化UI，不用管 ,下面的代码需要关注一下，是ui和后端交互的内容#
 
-		# 针对相应的url和mode创建下载器
-		# 如果创建失败的话可以直接返回
-
-		# a, t, gid, success = startDownload(self.aria, url)  # 调用Download函数创建下载任务，返回data = [a, t, gid]
-		_, statusList = a.tellActive()
-		status = 0
 		if append == 1:
-			if statusList is not None:
-				for s in statusList:
-					if s['gid'] == gid:
-						status = s['status']
+			statusDict = self.aria.tellStatus(gid)
+			status = statusDict["status"]
+			item_list.append(ui_item(name, t, gid, 0, status))
 
-				item_list.append(ui_item(url, mode, gid, a, t, 0, status))
-
-		# print("myDownloadBar:")
-		# print(a, t, gid, status)
-
-		# item_list.append(ui_item(url, mode, gid, a, t, status))
-		item_data = [a, t, gid]
-		print("myDownloadBar_2: ", a.taskStatus)
-		print_itemlist()
-		print("pause_dic is ", pause_dic)
-		Cancel.clicked.connect(lambda: self.onCancelClicked(item_data))
-		Delete.clicked.connect(lambda: self.onDeleteClicked(item, item_data))
-		StartPause.clicked.connect(lambda: self.onStartPauseClicked(StartPause, item_data))
+		item_data = [gid, t]
+		# print("myDownloadBar_2: ", a.taskStatus)
+		# print_itemlist()
+		# print("pause_dic is ", pause_dic)
+		Cancel.released.connect(lambda: self.onCancelReleased(item_data))
+		Delete.released.connect(lambda: self.onDeleteReleased(item, item_data))
+		StartPause.released.connect(lambda: self.onStartPauseReleased(StartPause, item_data))
 		# 这是把对cancel和startpause两个按键的按这个操作和相应的代码连接起来，处理后面的两个相应的函数就行了
 
 		# 这句代码是要根据url和mode创建一个该bar对应的下载任务，先暂时挂个url在这里
-
 		return success, bar, item
 
 	def debug_print(self):
@@ -354,13 +307,12 @@ class Ui_MainWindow(object):
 		gidList, statusList = self.aria.tellActive()
 		print(gidList, statusList)
 
-	def onStartPauseClicked(self, StartPause, item_data):
-		StartPause.setEnabled(False)
-		time.sleep(0.4)
-		StartPause.setEnabled(True)  # 出问题把这两句注释掉再试试
+	def onStartPauseReleased(self, StartPause, item_data):
+		a = self.aria
+		gid = item_data[0]
 		status = 0
 		for item in item_list:
-			if item.gid == item_data[2]:
+			if item.gid == gid:
 				status = item.status
 				break
 
@@ -374,7 +326,7 @@ class Ui_MainWindow(object):
 
 		if StartPause.text() == "Pause":  # 下载暂停
 			StartPause.setText("Continue")
-			status, gid = pauseDownload(item_data[0], item_data[2])  # (a, gid)
+			status, gid = pauseDownload(a, gid)  # (a, gid)
 			for item in item_list:
 				if item.gid == gid:
 					# print(item)
@@ -382,29 +334,25 @@ class Ui_MainWindow(object):
 					break
 		else:  # 下载继续
 			StartPause.setText("Pause")
-			print("onStartPauseClicked: ", item_data[0].taskStatus)
-			status, gid = unpauseDownload(item_data[0], item_data[2])  # (a, gid)
+			print("onStartPauseReleased: ", a.taskStatus)
+			status, gid = unpauseDownload(a, gid)  # (a, gid)
 			for item in item_list:
 				if item.gid == gid:
 					item.status = status  # 更新前端队列status
 					break
 		self.debug_print()
 
-	def onCancelClicked(self, item_data):
-		print("cancelClicked in")
+	def onCancelReleased(self, item_data):
+		print("cancelReleased in")
+		a = self.aria
+		gid = item_data[0]
 		status = 0
 		for item in item_list:
-			if item.gid == item_data[2]:
+			if item.gid == gid:
 				status = item.status
 				break
-		gid = item_data[2]
 		print("status is %s" % status)
-		if status == 'downloading':
-			status, gid = unpauseDownload(item_data[0], item_data[2])  # (a, gid)
-			for item in item_list:
-				if item.gid == gid:
-					item.status = status  # 更新前端队列status
-					break
+
 		if status == 'complete':
 			print("zgq: Already complete. Don't permit to pause!")
 			return
@@ -414,19 +362,15 @@ class Ui_MainWindow(object):
 		X_dic[str(gid)].setEnabled(True)
 		pause_dic[str(gid)].setEnabled(False)
 		cancel_dic[str(gid)].setEnabled(False)
+		self.Update(gid, 0)
 		# bar_dic[gid].update()
-		print("cancelClicked called")
-		a = item_data[0]
-		# gid = item_data[2]
-		_, statusList = a.tellActive()
+		print("cancelReleased called")
 
+		statusDict = a.tellStatus(gid)
+		status = statusDict["status"]
 		flag = True
-		for s in item_list:
-			if s.gid == gid:
-				status = a.tellStatus(gid)
-				if status['status'] == 'downloading' or status['status'] == 'paused':
-					flag = False
-				break
+		if status == 'downloading' or status == 'paused':
+			flag = False
 
 		if flag:  # 证明要cancel的项目不在状态(downloading/paused)中，所以不能cancel
 			return
@@ -440,17 +384,14 @@ class Ui_MainWindow(object):
 		self.debug_print()
 		return
 
-	def onDeleteClicked(self, item, item_data):
-		print("onDeleteClicked called")
-		a = item_data[0]
-		gid = item_data[2]
-		_, statusList = a.tellActive()
-		if statusList is not None:
-			for s in statusList:
-				if s['gid'] == gid:
-					status = a.tellStatus(gid)
-					if status['status'] == 'downloading' or status['status'] == 'paused':  # 正在下载，不能删除
-						return
+	def onDeleteReleased(self, item, item_data):
+		print("onDeleteReleased called")
+		a = self.aria
+		gid = item_data[0]
+		statusDict = a.tellStatus(gid)
+		status = statusDict["status"]
+		if status == 'downloading' or status == 'paused':  # 正在下载，不能删除
+			return
 		# stopped/completed 任务可以删除
 		self.DownloadList.takeItem(self.DownloadList.row(item))
 		# 维护前端队列

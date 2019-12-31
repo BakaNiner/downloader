@@ -7,6 +7,7 @@ import random
 import pickle
 import urllib.parse
 import ast
+import threading
 
 class task:
 	def __init__(self):
@@ -101,9 +102,9 @@ class aria:
 		if i > j:
 			return str(round(size, 2)) + " " + labels[i]
 		else:
-			return str(round(size, None)) + " " + labels[i]
+			return str(round(size)) + " " + labels[i]
 
-	def startAria(self, ariaPath = "", port = 6800, maxConcurrentDownloads = 5, loadSession = True):
+	def startAria(self, ariaPath = "", port = 6800, maxConcurrentDownloads = 10, loadSession = True):
 		"""
 		:param ariaPath: aria2c.exe所在的目录，默认当前目录
 		:param port: aria的daemon监听端口
@@ -112,7 +113,7 @@ class aria:
 		:return: bool，aria是否启动成功
 		启动aria。这个函数需要一开始被调用。
 		"""
-		print("zgq: start Aria called")
+		# print("zgq: start Aria called")
 		curDir = os.path.dirname(sys.argv[0])
 		# 如果aria2c.exe目录没给出，默认当前目录
 		if ariaPath == "":
@@ -135,7 +136,7 @@ class aria:
 		# 加载参数
 		params = [ariaPath, "--no-conf", "--enable-rpc", "--rpc-listen-port=" + str(self.port),
 				  "--rpc-allow-origin-all=true", "--continue=true",
-				  "--rpc-max-request-size=1024M", "--rpc-listen-all", "--quiet=true",
+				  "--rpc-max-request-size=8192M", "--rpc-listen-all", "--quiet=true",
 				  "--max-concurrent-downloads=" + str(maxConcurrentDownloads),
 				  "--save-session=sess"]
 
@@ -199,7 +200,7 @@ class aria:
 		self.taskDict[gid] = t
 		return gid
 
-	def downloadStart(self, gid, mode):
+	def downloadStart(self, gid):
 		"""
 		:param gid: task的gid
 		:return: bool，操作是否成功
@@ -269,7 +270,7 @@ class aria:
 				"all-proxy-passwd": self.taskDict[gid].proxyPasswd,
 				"http-user": self.taskDict[gid].downloadUser,
 				"http-passwd": self.taskDict[gid].downloadPasswd,
-				"split": mode,
+				"split": self.taskDict[gid].split,
 				"max-connection-per-server": self.taskDict[gid].connections,
 				"min-split-size": "1M",
 				"continue": "true",
@@ -289,7 +290,7 @@ class aria:
 				# 如果有终止时间，进入循环等待
 				if self.taskDict[gid].endTime != "":
 					self.waitToEnd(gid)
-				return True  # zbc added
+				return True
 			except:
 				self.taskStatus[gid] = "error"
 				print("ERROR: Download didn't start.")
@@ -314,16 +315,21 @@ class aria:
 		else:
 			# 对于其他状态，给aria发送终止指令
 			try:
-				self.server.aria2.remove(gid)
 				# 如果正在下载，需要删除掉已经下载的文件
-				if status == "downloading":
-					fileStatus = self.tellStatus(gid)
+				if status == "downloading" or status == "paused":
+					self.server.aria2.remove(gid)
+					# 等aria反应
+					time.sleep(5)
 					self.server.aria2.removeDownloadResult(gid)
 					# 多文件这里可能会遇到问题
-					if os.path.isfile(fileStatus["path"]):
-						os.remove(fileStatus["path"])
-					if os.path.isfile(fileStatus["path"] + ".aria2"):
-						os.remove(fileStatus["path"] + ".aria2")
+					path = os.path.join(self.taskDict[gid].downloadPath, self.taskDict[gid].out)
+					print(path)
+					if os.path.isfile(path):
+						print(path)
+						os.remove(path)
+					if os.path.isfile(path + ".aria2"):
+						print(path + ".aria2")
+						os.remove(path + ".aria2")
 			except:
 				print("ERROR: Aria remove error.")
 				return False
@@ -454,14 +460,11 @@ class aria:
 		返回该任务的下载状态
 		"""
 		try:
-			downloadStatus = self.server.aria2.tellStatus(
-				gid, ["status", "connections", "errorCode", "errorMessage", "downloadSpeed", "connections", "dir",
-					  "totalLength", "completedLength", "files"])
+			downloadStatus = self.server.aria2.tellStatus(gid, ["status", "connections", "errorCode", "errorMessage", "downloadSpeed", "connections", "dir", "totalLength", "completedLength", "files"])
 			downloadStatus["gid"] = gid
 		except:
-			# print("kill!!!!!!!!   ", gid)
-			# print(self.taskStatus)
-			return {"status": self.taskStatus[str(gid)]}
+			print("ERROR: tellStatus error.")
+			return {"status": self.taskStatus[gid]}
 
 		# 转化信息格式
 		convertedInfoDict = self.convertDownloadInformation(downloadStatus)
@@ -470,6 +473,7 @@ class aria:
 		# 如果出错，给出错误信息，并删除下载缓存
 		if convertedInfoDict["status"] == "error":
 			convertedInfoDict["error"] = str(downloadStatus["errorMessage"])
+			print(convertedInfoDict["error"])
 			self.server.aria2.remove(gid)
 			self.server.aria2.removeDownloadResult(gid)
 			# 多文件这里可能会遇到问题
@@ -641,66 +645,6 @@ class aria:
 		# 到达时间，并且任务未终止或下载完，暂停任务
 		self.downloadPause(gid)
 
-def quitAria(a):
-	# 关闭aria
-	print("Shutdown aria")
-	a.shutdownAria()
-
-def startDownload(a, url, mode, out, path = "D:/test"):
-	# 新建一个任务
-	# test_id = test_id + 1
-	t = task()
-	t.link = url
-	t.downloadPath = path
-	t.limit = "128K"
-	# t.out = "test_" + test_id + ".exe"
-	out_list = url.split("/")
-	out = out_list[len(out_list) - 1]
-	t.out = out
-	t.connections = "5"
-
-	# res = a.startAri(loadSession=False)
-	# print("Aria start result: " + str(res))
-	gid = a.addNewTask(t)
-
-	# 开始下载任务，前端实现时需要新建一个线程执行downloadStart
-	print("Start download")
-	flag = a.downloadStart(gid, mode)
-	# print("flag "+str(flag))
-	return a, t, gid, flag
-
-def pauseDownload(a, gid):
-	# 暂停任务
-	print("Pause download")
-	a.downloadPause(gid)
-	status = a.tellStatus(gid)  # 更新后端status为aria的新status
-	print(status['status'])
-	return status['status'], gid
-
-def unpauseDownload(a, gid):
-	print("Unpause download")
-	a.downloadUnpause(gid)
-	print("unpausedownload: ", a.taskStatus)
-	status = a.tellStatus(gid)  # 更新后端status为aria的新status
-	print(status['status'])
-	return status['status'], gid
-
-def deleteDownload(a, gid):
-	# 删除任务
-	# 如果下载完成时没有调用tellStatus，这里任务gid的状态仍为downloading，不会删除
-	print("Delete download")
-	print(a.taskStatus[gid])
-	a.downloadDelete(gid)
-
-def stopDownload(a, gid):
-	# 终止任务（这个指令速度可能比较慢，建议单开一个线程）
-	print("Stop download")
-	a.downloadStop(gid)
-	print("debug1")
-	status = a.tellStatus(gid)  # 更新后端status为aria的新status
-	print(status['status'])
-	print("stop download return")
-	return status['status'], gid
 
 if __name__ == "__main__":
 	# 新建一个任务
