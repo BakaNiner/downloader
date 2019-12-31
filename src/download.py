@@ -54,6 +54,7 @@ class aria:
 		self.port = -1
 		self.taskDict = {}
 		self.taskStatus = {}
+		self.tmpStatus = {}
 		self.ariaProcess = None
 
 	# self.startAria()
@@ -309,34 +310,38 @@ class aria:
 		# 先调用tellStatus更新taskStatus
 		self.tellStatus(gid)
 		status = self.taskStatus[gid]
+
+		success = True
 		# 如果状态是scheduled，该任务还未发送给aria
 		if status == "scheduled":
 			self.taskStatus[gid] = "stopped"
+		# 对于其他状态，给aria发送终止指令
 		else:
-			# 对于其他状态，给aria发送终止指令
-			try:
-				# 如果正在下载，需要删除掉已经下载的文件
-				if status == "downloading" or status == "paused":
+			# 如果正在下载，需要删除掉已经下载的文件
+			if status == "downloading":
+				try:
 					self.server.aria2.remove(gid)
 					# 等aria反应
 					time.sleep(5)
 					self.server.aria2.removeDownloadResult(gid)
+				except:
+					success = False
+					print("ERROR: Aria remove gid error.")
+				try:
 					# 多文件这里可能会遇到问题
 					path = os.path.join(self.taskDict[gid].downloadPath, self.taskDict[gid].out)
 					print(path)
 					if os.path.isfile(path):
-						print(path)
 						os.remove(path)
 					if os.path.isfile(path + ".aria2"):
-						print(path + ".aria2")
 						os.remove(path + ".aria2")
-			except:
-				print("ERROR: Aria remove error.")
-				return False
+				except:
+					success = False
+					print("ERROR: Remove file error.")
 			# 如果下载未完成，需要把状态改成终止
 			if status != "complete":
 				self.taskStatus[gid] = "stopped"
-		return True
+		return success
 
 	def downloadPause(self, gid):
 		"""
@@ -463,7 +468,10 @@ class aria:
 			downloadStatus = self.server.aria2.tellStatus(gid, ["status", "connections", "errorCode", "errorMessage", "downloadSpeed", "connections", "dir", "totalLength", "completedLength", "files"])
 			downloadStatus["gid"] = gid
 		except:
-			print("ERROR: tellStatus error.")
+			print("Warning: Aria can't find " + gid + "'s information, maybe it hasn't changed or it is already stopped. Returning back-end's status.")
+			# if gid in self.tmpStatus:
+			# 	return self.tmpStatus[gid]
+			# else:
 			return {"status": self.taskStatus[gid]}
 
 		# 转化信息格式
@@ -481,6 +489,8 @@ class aria:
 				os.remove(convertedInfoDict["path"])
 			if os.path.isfile(convertedInfoDict["path"] + ".aria2"):
 				os.remove(convertedInfoDict["path"] + ".aria2")
+
+		self.tmpStatus[gid] = convertedInfoDict
 		return convertedInfoDict
 
 	def convertDownloadInformation(self, downloadStatus):

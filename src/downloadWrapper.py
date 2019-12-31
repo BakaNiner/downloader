@@ -33,7 +33,6 @@ def pauseDownload(a, gid):
 def unpauseDownload(a, gid):
 	print("Unpause download")
 	a.downloadUnpause(gid)
-	print("unpausedownload: ", a.taskStatus)
 	status = a.tellStatus(gid)  # 更新后端status为aria的新status
 	print(status['status'])
 	return status['status'], gid
@@ -49,8 +48,6 @@ def stopDownload(a, gid):
 	# 终止任务（这个指令速度可能比较慢，建议单开一个线程）
 	print("Stop download")
 	a.downloadStop(gid)
-	print("debug1")
-	status = a.tellStatus(gid)  # 更新后端status为aria的新status
-	print(status['status'])
-	print("stop download return")
-	return status['status'], gid
+	status = a.taskStatus[gid]  # 更新后端status为aria的新status
+	print(status)
+	return status, gid

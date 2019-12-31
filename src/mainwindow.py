@@ -18,7 +18,7 @@ class ui_item:
 def getPercent(a, gid):
 	status = a.tellStatus(gid)
 	v = status['percent']
-	if v is None:  # v = None 意味着文件大小未知，进度0
+	if v is None:  # 意味着文件大小未知，进度0
 		v = 0
 	else:
 		v = int(v[0:-1])  # 去掉百分号
@@ -368,12 +368,14 @@ class Ui_MainWindow(object):
 
 		statusDict = a.tellStatus(gid)
 		status = statusDict["status"]
-		flag = True
-		if status == 'downloading' or status == 'paused':
-			flag = False
-
-		if flag:  # 证明要cancel的项目不在状态(downloading/paused)中，所以不能cancel
+		# 证明要cancel的项目不在状态(downloading/paused)中，所以不能cancel
+		if not (status == 'downloading' or status == 'paused'):
 			return
+
+		if status == "paused":
+			a.updateLimitSpeed(gid, "1K")
+			unpauseDownload(a, gid)
+			time.sleep(2)
 
 		status, gid = stopDownload(a, gid)
 		# 维护前端队列
@@ -390,6 +392,7 @@ class Ui_MainWindow(object):
 		gid = item_data[0]
 		statusDict = a.tellStatus(gid)
 		status = statusDict["status"]
+		print("Task Status: " + status)
 		if status == 'downloading' or status == 'paused':  # 正在下载，不能删除
 			return
 		# stopped/completed 任务可以删除
