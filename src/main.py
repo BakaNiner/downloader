@@ -80,7 +80,6 @@ class myMainwindow(QtWidgets.QMainWindow):
 		event.accept()
 
 if __name__ == '__main__':
-	item_list = []
 	app = QtWidgets.QApplication(sys.argv)
 	aria_pointer = aria()
 	# res = aria_pointer.startAria()

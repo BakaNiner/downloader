@@ -7,7 +7,7 @@ import time
 class ui_item:
 	cnt = 0
 
-	def __init__(self, url, mode, gid, a, t, percent, status, path = "D:/"):
+	def __init__(self, url, mode, gid, a, t, percent, status, path = "D:/test"):
 		self.url = url
 		self.mode = mode
 		self.path = path
@@ -58,21 +58,14 @@ class myThread(QtCore.QThread):
 		active_gid_list, _ = a.tellActive()
 		for item in item_list:
 			if item.status == 'downloading':
-				active = 0
-				if active_gid_list is not None:
-					for active_gid in active_gid_list:
-						if active_gid == item.gid:
-							active = 1
-							break
-				if active == 1:
+				if active_gid_list is not None and item.gid in active_gid_list:
 					percent = getPercent(a, item.gid)
 					item.percent = percent
 					self.signal_update.emit(str(item.gid), percent)
 				#   if (percent < 95) : #在接近下载完成的时候getpercent可能无法正常返回值！
 				#       progress_dic[item.gid].setValue(percent)
-				elif active == 0 and item.status != 'stopped':
-					item.status = 'complete'
-					item.modify = 0
+				else:
+					item.status = a.tellStatus(item.gid)
 			if item.status == 'complete' and item.modify == 0:
 				time.sleep(0.4)
 				self.signal_complete.emit(str(item.gid))
@@ -269,7 +262,7 @@ class Ui_MainWindow(object):
 
 		# item_list.append(ui_item(url, mode, gid, a, t, status))
 		item_data = [a, t, gid]
-		Cancel.clicked.connect(lambda: self.onCancelClicked(item_data, gid))
+		Cancel.clicked.connect(lambda: self.onCancelClicked(item_data))
 		Delete.clicked.connect(lambda: self.onDeleteClicked(item, item_data))
 		StartPause.clicked.connect(lambda: self.onStartPauseClicked(StartPause, item_data))
 		# 这是把对cancel和startpause两个按键的按这个操作和相应的代码连接起来，处理后面的两个相应的函数就行了

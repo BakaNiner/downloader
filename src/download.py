@@ -646,7 +646,7 @@ def quitAria(a):
 	print("Shutdown aria")
 	a.shutdownAria()
 
-def startDownload(a, url, mode, out, path = "D:/"):
+def startDownload(a, url, mode, out, path = "D:/test"):
 	# 新建一个任务
 	# test_id = test_id + 1
 	t = task()
