@@ -1,6 +1,6 @@
 import os
 import pickle
-import mainwindow
+import mainwindow_ui
 from downloadWrapper import *
 from PyQt5 import QtWidgets
 import sys
@@ -21,7 +21,7 @@ pause_dic = {}
 cancel_dic = {}
 X_dic = {}
 bar_dic = {}
-
+spd_dic = {}
 def _async_raise(tid, exctype):
 	"""raises the exception, performs cleanup if needed"""
 	tid = ctypes.c_long(tid)
@@ -38,7 +38,7 @@ def stop_thread(thread):
 	_async_raise(thread.ident, SystemExit)
 
 def print_itemlist():
-	for item in mainwindow.item_list:
+	for item in item_list:
 		print(item.gid, item.status)
 
 class myMainwindow(QtWidgets.QMainWindow):
@@ -56,17 +56,16 @@ class myMainwindow(QtWidgets.QMainWindow):
 		print("quit Aria")
 		print(aria_pointer)
 		# self.aria_pointer.tellActive()
-		for item in mainwindow.item_list:
+		print(id(mainwindow_ui.item_list))
+		for item in mainwindow_ui.item_list:
 			if item.status == 'downloading':
-				status, gid = pauseDownload(item.a, item.gid)  # (a, gid)
+				status, gid = pauseDownload(aria_pointer, item.gid)  # (a, gid)
 				item.status = 'paused'
-
 		isSucess = aria_pointer.shutdownAria()
-
 		curDir = os.path.dirname(sys.argv[0])
 		ItemListPath = os.path.join(curDir, "ItemList.pkl")
 		with open(ItemListPath, "wb") as f:
-			pickle.dump(mainwindow.item_list, f)
+			pickle.dump(mainwindow_ui.item_list, f)
 
 		global flag
 		flag = 0
@@ -85,7 +84,7 @@ if __name__ == '__main__':
 	# res = aria_pointer.startAria()
 	mainwindows = myMainwindow(aria_pointer)
 	# print("debug+:" + str(aria_pointer))
-	ui = mainwindow.Ui_MainWindow(mainwindows)
+	ui = mainwindow_ui.Ui_MainWindow(mainwindows)
 	mainwindows.show()
 	# maxiter = 500
 

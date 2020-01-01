@@ -5,10 +5,24 @@
 # Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
-
+import resources_rc
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from myThread import *
+import sys
 class Ui_MainWindow(object):
+    def __init__(self, mainwindow):
+        # self.item_list = []
+        self.cnt = 0
+        self.aria = mainwindow.aria_pointer
+        self.setupUi(mainwindow)
+        self.begin.released.connect(self.Begin)
+        self.mythread = myThread(self.aria)
+        self.mythread.signal_update.connect(self.Update)
+        self.mythread.signal_complete.connect(self.complete)
+        self.mythread.start()
+        self.load_itemlist()
+        # self.mythread.start()
+        print("startAria:" + str(self.aria))
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(900, 615)
@@ -417,4 +431,4 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Downloader"))
 
-import resources_rc
+

@@ -49,6 +49,7 @@ class myThread(QtCore.QThread):
 	def check_completed(self):
 		a = self.a
 		active_gid_list, _ = a.tellActive()
+
 		for item in item_list:
 			if item.status == 'downloading':
 				if active_gid_list is not None and item.gid in active_gid_list:
@@ -73,7 +74,7 @@ class myThread(QtCore.QThread):
 
 class Ui_MainWindow(object):
 	def __init__(self, mainwindow):
-		# self.item_list = []
+		self.item_list = []
 		self.cnt = 0
 		self.aria = mainwindow.aria_pointer
 		self.setupUi(mainwindow)
@@ -83,7 +84,6 @@ class Ui_MainWindow(object):
 		self.mythread.signal_complete.connect(self.complete)
 		self.mythread.start()
 		self.load_itemlist()
-		# self.mythread.start()
 		print("startAria:" + str(self.aria))
 
 	def complete(self, gid):
@@ -101,6 +101,7 @@ class Ui_MainWindow(object):
 	def load_itemlist(self):
 		curDir = os.path.dirname(sys.argv[0])
 		ItemListPath = os.path.join(curDir, "ItemList.pkl")
+		print("from load itemlist",id(item_list))
 		if os.path.exists(ItemListPath):
 			with open(ItemListPath, "rb") as f:
 				temp_list = pickle.load(f)
