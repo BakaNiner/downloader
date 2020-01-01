@@ -16,10 +16,14 @@ class Ui_Form(QtWidgets.QWidget):
         self.mainwindow = mainwindow
         self.createNewTask.released.connect(self.addTask)
         self.calcel.released.connect(self.cancel)
+        self.chooseDir.released.connect(self.choose)
+    def choose(self):
+        pathname = QtWidgets.QFileDialog.getExistingDirectory(self.chooseDir, "选择文件夹", "D:/")
+        self.downloadPath.setText(pathname)
     def addTask(self):
         url = self.link.text()
         path = self.downloadPath.text()
-        limit = self.limit.text()
+        limit = self.limit.text()+"K"
         split = self.split.text()
         out = self.out.text()
         threads = self.connections.text()
@@ -28,7 +32,7 @@ class Ui_Form(QtWidgets.QWidget):
             return
         ##以上，传参
         ##以下，尝试创建新的任务
-        t, gid, success = startDownload(self.mainwindow.aria, url, split, out) #没传path和limit！
+        t, gid, success = startDownload(self.mainwindow.aria, url, split, out , path,limit,threads)
         if  success == 2 :
             reply = QMessageBox.information(self.createNewTask, 'Error', '已有同名文件！', QMessageBox.Yes, QMessageBox.Yes)
             return
@@ -463,6 +467,7 @@ class Ui_Form(QtWidgets.QWidget):
         font.setPointSize(11)
         self.downloadPath.setFont(font)
         self.downloadPath.setObjectName("downloadPath")
+        self.downloadPath.setFocusPolicy(QtCore.Qt.NoFocus)
         self.chooseDir = QtWidgets.QPushButton(self.must)
         self.chooseDir.setGeometry(QtCore.QRect(640, 70, 121, 25))
         font = QtGui.QFont()

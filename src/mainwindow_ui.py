@@ -45,14 +45,14 @@ class Ui_MainWindow(object):
                         self.cnt = self.cnt + 1
                         # print("load_itemlist: ", item.a.taskStatus)
                         self.addBar_2(out=item_list[i].name,t=item_list[i].t,
-                                                                             gid=item_list[i].gid)
+                                                                             gid=item_list[i].gid,id=2)
                         # item_list[i].precent = getPercent(item.a, item_list[i].gid)
                         progress_dic[str(item_list[i].gid)].setValue(item_list[i].percent)
                     # progress_dic[item_list[i].gid].setValue(getPercent(item_list[i].a,item_list[i].gid))
                     # bar_dic[item_list[i].gid].update()
                     else:
-                        self.addBar(out=item_list[i].name, t=item_list[i].t,
-                                                                           gid=item_list[i].gid)
+                        self.addBar_2(out=item_list[i].name, t=item_list[i].t,
+                                                                           gid=item_list[i].gid,id=1)
                         progress_dic[str(item_list[i].gid)].setValue(item_list[i].percent)
 
                     if item_list[i].status == 'complete':
@@ -74,10 +74,10 @@ class Ui_MainWindow(object):
         progress_dic[gid].setValue(100)
         # progress_dic.pop(gid)
         pause_dic[gid].setEnabled(False)
-
-    def Update(self, gid, percent):
+        spd_dic[gid].setText("NaN")
+    def Update(self, gid, percent,speed):
         progress_dic[gid].setValue(percent)
-
+        spd_dic[gid].setText(speed)
     def addBar(self,gid,out,t):
         tmpItem = QtWidgets.QListWidgetItem(self.DownloadList)
         tmpItem.setSizeHint(QtCore.QSize(850,70))
@@ -88,10 +88,10 @@ class Ui_MainWindow(object):
         status = statusDict["status"]
         item_list.append(ui_item(out, t, gid, 0, status))
         print(item_list)
-    def addBar_2(self,gid,out,t):
+    def addBar_2(self,gid,out,t,id):
         tmpItem = QtWidgets.QListWidgetItem(self.DownloadList)
         tmpItem.setSizeHint(QtCore.QSize(850, 70))
-        newbar = Ui_task(gid, tmpItem, out, self, 2)
+        newbar = Ui_task(gid, tmpItem, out, self,id)
         self.DownloadList.addItem(tmpItem)
         self.DownloadList.setItemWidget(tmpItem, newbar)
     def setupUi(self, MainWindow):
@@ -514,20 +514,21 @@ class ui_item:
         self.status = status
         ui_item.cnt += 1
 
-def getPercent(a, gid):
+def getPercentandSpeed(a, gid):
     status = a.tellStatus(gid)
     v = status['percent']
+    s = status['rate']
     if v is None:  # 意味着文件大小未知，进度0
         v = 0
     else:
         v = int(v[0:-1])  # 去掉百分号
-    return v
+    return v,s
 
 def print_progress(a):
     active_gid_list, _ = a.tellActive()
     if active_gid_list is not None:
         for active_gid in active_gid_list:
-            percent = getPercent(a, active_gid)
+            percent,speed = getPercentandSpeed(a, active_gid)
             time.sleep(0.3)
             if (active_gid in progress_dic.keys()):
                 pass
@@ -539,7 +540,7 @@ def print_progress(a):
 
 class myThread(QtCore.QThread):
     signal_complete = QtCore.pyqtSignal(str)
-    signal_update = QtCore.pyqtSignal(str, int)
+    signal_update = QtCore.pyqtSignal(str, int,str)
 
     def __init__(self, a):
         super(myThread, self).__init__()
@@ -551,9 +552,9 @@ class myThread(QtCore.QThread):
         for item in item_list:
             if item.status == 'downloading':
                 if active_gid_list is not None and item.gid in active_gid_list:
-                    percent = getPercent(a, item.gid)
+                    percent , speed = getPercentandSpeed(a, item.gid)
                     item.percent = percent
-                    self.signal_update.emit(str(item.gid), percent)
+                    self.signal_update.emit(str(item.gid), percent , speed)
                 else:
                     statusDict = a.tellStatus(item.gid)
                     item.status = statusDict["status"]

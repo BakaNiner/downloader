@@ -9,6 +9,19 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMessageBox
 from main import *
+class cancelThread(QtCore.QThread):
+    def __init__(self,a,gid):
+        super(cancelThread,self).__init__()
+        self.a = a
+        self.gid = gid
+    def run(self):
+        status, gid = stopDownload(self.a, self.gid)
+        # 维护前端队列
+        print(item_list)
+        for i in range(len(item_list)):
+            if item_list[i].gid == self.gid:
+                item_list[i].status = status  # 更新前端队列状态，不删除记录
+                break
 class Ui_task(QtWidgets.QWidget):
     def __init__(self,gid,item,out,mainwindow,status):
         super(QtWidgets.QWidget,self).__init__()
@@ -49,6 +62,7 @@ class Ui_task(QtWidgets.QWidget):
                     break
     def onCancel(self):
         a = self.mainwindow.aria
+
         gid = self.gid
         status = 0
         for item in item_list:
@@ -66,7 +80,6 @@ class Ui_task(QtWidgets.QWidget):
         X_dic[str(gid)].setEnabled(True)
         pause_dic[str(gid)].setEnabled(False)
         cancel_dic[str(gid)].setEnabled(False)
-        self.mainwindow.Update(gid, 0)
         # bar_dic[gid].update()
         print("cancelReleased called")
 
@@ -80,12 +93,9 @@ class Ui_task(QtWidgets.QWidget):
             a.updateLimitSpeed(gid, "1K")
             unpauseDownload(a, gid)
             time.sleep(0.5)
-        status, gid = stopDownload(a, gid)
-        # 维护前端队列
-        for i in range(len(item_list)):
-            if item_list[i].gid == gid:
-                item_list[i].status = status  # 更新前端队列状态，不删除记录
-                break
+        self.cancel = cancelThread(a,gid)
+        self.cancel.start()
+        self.mainwindow.Update(gid, 0, "NaN")
         return
     def onDelete(self):
         a=self.mainwindow.aria

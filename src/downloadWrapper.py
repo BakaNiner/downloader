@@ -5,15 +5,28 @@ def quitAria(a):
 	print("Shutdown aria")
 	a.shutdownAria()
 
-def startDownload(a, url, split, out, path = "D:/test"):
+def startDownload(a, url, split, out, path , limit,threads):
 	# 新建一个任务
 	t = task()
+	print(url,split,out,path,limit,threads)
 	t.link = url
-	t.downloadPath = path
-	t.limit = "512K"
-	t.split = split
+	if ( path == ""):
+		t.downloadPath = "D:/"
+	else:
+		t.downloadPath = path
+	if ( limit =="K") :
+		t.limit = "512K"
+	else :
+		t.limit = limit
+	if ( split == ""):
+		t.split ="5"
+	else:
+		t.split = split
 	t.out = out
-	t.connections = "5"
+	if ( threads == ""):
+		t.connections = "5"
+	else:
+		t.connections = threads
 
 	gid = a.addNewTask(t)
 
