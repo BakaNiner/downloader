@@ -46,6 +46,7 @@ class Ui_task(QtWidgets.QWidget):
             return
         if self.StartPause.text() == "Pause":  # 下载暂停
             self.StartPause.setText("Continue")
+            self.StartPause.setStyleSheet("color:rgb(0,0,0,0);border-image: url(:/Breeze-Dark/play.svg);")
             status, gid = pauseDownload(a, gid)  # (a, gid)
             for item in item_list:
                 if item.gid == gid:
@@ -54,6 +55,7 @@ class Ui_task(QtWidgets.QWidget):
                     break
         else:  # 下载继续
             self.StartPause.setText("Pause")
+            self.StartPause.setStyleSheet("color:rgb(0,0,0,0);border-image: url(:/Breeze-Dark/pause.svg);")
             print("onStartPauseReleased: ", a.taskStatus)
             status, gid = unpauseDownload(a, gid)  # (a, gid)
             for item in item_list:
@@ -516,8 +518,8 @@ class Ui_task(QtWidgets.QWidget):
         self.filename.setObjectName("filename")
         self.StartPause = QtWidgets.QPushButton(task)
         self.StartPause.setGeometry(QtCore.QRect(730, 15, 40, 40))
-        self.StartPause.setStyleSheet("border-image: url(:/Breeze-Dark/pause.svg);")
         self.StartPause.setText("")
+        self.StartPause.setStyleSheet("color:rgb(0,0,0,0);border-image: url(:/Breeze-Dark/pause.svg);")
         self.StartPause.setObjectName("StartPause")
         if (status == 1) :
             self.StartPause.setText("Pause")
