@@ -57,8 +57,6 @@ class aria:
 		self.tmpStatus = {}
 		self.ariaProcess = None
 
-	# self.startAria()
-
 	@staticmethod
 	def convertTimeToFloat(t: str):
 		"""
