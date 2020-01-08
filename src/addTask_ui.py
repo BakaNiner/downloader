@@ -24,36 +24,36 @@ class Ui_Form(QtWidgets.QWidget):
         url = self.link.text()
         path = self.downloadPath.text()
 
-        limit = self.limit.text()+"K"
+        limit = self.limit.text() + "K"
         if limit == "K":
-            limit = '128K'
+            limit = '0'
 
         split = self.split.text()
-        if split == "":
-            split = '1'
+        # if split == "":
+        #     split = '1'
 
         out = self.out.text()
-        if out == "":
-            out = url.split('/')[-1]
-        else:
-            out += '.'
-            out += url.split('.')[-1]
+        # if out == "":
+        #     out = url.split('/')[-1]
+        # else:
+        #     out += '.'
+        #     out += url.split('.')[-1]
 
         threads = self.connections.text()
-        if threads == "":
-            threads = "1"
+        # if threads == "":
+        #     threads = "1"
 
         if self.link.text() == '':
-            reply = QMessageBox.information(self.createNewTask, 'Error', '请输入正确的下载链接', QMessageBox.Yes, QMessageBox.Yes)
+            QMessageBox.information(self.createNewTask, 'Error', '请输入正确的下载链接', QMessageBox.Yes, QMessageBox.Yes)
             return
         ##以上，传参
         ##以下，尝试创建新的任务
         t, gid, success = startDownload(self.mainwindow.aria, url, split, out , path,limit,threads)
         if  success == 2 :
-            reply = QMessageBox.information(self.createNewTask, 'Error', '已有同名文件！', QMessageBox.Yes, QMessageBox.Yes)
+            QMessageBox.information(self.createNewTask, 'Error', '已有同名文件！', QMessageBox.Yes, QMessageBox.Yes)
             return
         if success == 0:
-            reply = QMessageBox.information(self.createNewTask, 'Error', '开始任务失败，请检查下载设置并重新尝试！',
+            QMessageBox.information(self.createNewTask, 'Error', '开始任务失败，请检查下载设置并重新尝试！',
                                                 QMessageBox.Yes, QMessageBox.Yes)
             return
         if success == 1 :
