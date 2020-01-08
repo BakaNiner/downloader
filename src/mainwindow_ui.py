@@ -58,13 +58,22 @@ class Ui_MainWindow(object):
                     if item_list[i].status == 'complete':
                         pause_dic[str(item_list[i].gid)].setEnabled(False)
                         cancel_dic[str(item_list[i].gid)].setEnabled(False)
+                        pause_dic[str(item_list[i].gid)].setVisible(False)
+                        cancel_dic[str(item_list[i].gid)].setVisible(False)
+                        spd_dic[str(item_list[i].gid)].setText("COMPLETED")
                         progress_dic[str(item_list[i].gid)].setValue(100)
                         X_dic[str(item_list[i].gid)].setEnabled(True)
                     # bar_dic[str(item.gid)].update()
-
+                    
+                    if item_list[i].status == 'paused':
+                        spd_dic[str(item_list[i].gid)].setText("PAUSED")
+                        
                     if item_list[i].status == 'stopped':
                         pause_dic[str(item_list[i].gid)].setEnabled(False)
                         cancel_dic[str(item_list[i].gid)].setEnabled(False)
+                        pause_dic[str(item_list[i].gid)].setVisible(False)
+                        cancel_dic[str(item_list[i].gid)].setVisible(False)
+                        spd_dic[str(item_list[i].gid)].setText("STOPPED")
                         # progress_dic[str(item.gid)].setValue(100)
                         X_dic[str(item_list[i].gid)].setEnabled(True)
                     print("ok")
@@ -74,10 +83,17 @@ class Ui_MainWindow(object):
         progress_dic[gid].setValue(100)
         # progress_dic.pop(gid)
         pause_dic[gid].setEnabled(False)
-        spd_dic[gid].setText("NaN")
+        spd_dic[gid].setText("COMPLETED")
+        cancel_dic[gid].setVisible(False)
+        pause_dic[gid].setVisible(False)
+        
+        
     def Update(self, gid, percent,speed):
         progress_dic[gid].setValue(percent)
         spd_dic[gid].setText(speed)
+    def UpdateStatus(self, gid, status):
+        #progress_dic[gid].setValue(percent)
+        spd_dic[gid].setText(status)
     def addBar(self,gid,out,t):
         tmpItem = QtWidgets.QListWidgetItem(self.DownloadList)
         tmpItem.setSizeHint(QtCore.QSize(850,70))
@@ -516,8 +532,12 @@ class ui_item:
 
 def getPercentandSpeed(a, gid):
     status = a.tellStatus(gid)
-    v = status['percent']
-    s = status['rate']
+    if 'percent' in status.keys() :
+        v = status['percent']
+    else:
+        v = 100
+    if 'rate' in status.keys() :
+        s = status['rate']
     if v is None:  # 意味着文件大小未知，进度0
         v = 0
     else:

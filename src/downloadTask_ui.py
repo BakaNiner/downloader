@@ -47,6 +47,9 @@ class Ui_task(QtWidgets.QWidget):
         if self.StartPause.text() == "Pause":  # 下载暂停
             self.StartPause.setText("Continue")
             self.StartPause.setStyleSheet("color:rgb(0,0,0,0);border-image: url(:/Breeze-Dark/play.svg);")
+            self.mainwindow.UpdateStatus(gid, "PAUSED")
+            #self.Delete.setStyleSheet("color:rgb(0,0,0,1);border-image: url(:/Breeze-Dark/play.svg);")
+            #self.Delete.setVisible(False)
             status, gid = pauseDownload(a, gid)  # (a, gid)
             for item in item_list:
                 if item.gid == gid:
@@ -56,6 +59,7 @@ class Ui_task(QtWidgets.QWidget):
         else:  # 下载继续
             self.StartPause.setText("Pause")
             self.StartPause.setStyleSheet("color:rgb(0,0,0,0);border-image: url(:/Breeze-Dark/pause.svg);")
+            #self.Delete.setStyleSheet("color:rgb(0,0,0,1);border-image: url(:/Breeze-Dark/play.svg);")
             print("onStartPauseReleased: ", a.taskStatus)
             status, gid = unpauseDownload(a, gid)  # (a, gid)
             for item in item_list:
@@ -97,7 +101,9 @@ class Ui_task(QtWidgets.QWidget):
             time.sleep(0.5)
         self.cancel = cancelThread(a,gid)
         self.cancel.start()
-        self.mainwindow.Update(gid, 0, "NaN")
+        self.mainwindow.UpdateStatus(gid, "STOPPED")
+        self.Cancel.setVisible(False)
+        self.StartPause.setVisible(False)
         return
     def onDelete(self):
         a=self.mainwindow.aria
@@ -106,7 +112,7 @@ class Ui_task(QtWidgets.QWidget):
         status = statusDict["status"]
         print("Task Status: " + status)
         if status == 'downloading' or status == 'paused':  # 正在下载，不能删除
-            reply = QMessageBox.warning(self.hidden, 'Error', '请不要直接删除正在下载的任务！',
+            reply = QMessageBox.warning(self.hidden, 'Error', '请不要直接删除没有取消的任务！',
                                             QMessageBox.Yes, QMessageBox.Yes)
             return
         # stopped/completed 任务可以删除
@@ -525,6 +531,7 @@ class Ui_task(QtWidgets.QWidget):
             self.StartPause.setText("Pause")
         else:
             self.StartPause.setText("Continue")
+            self.StartPause.setStyleSheet("color:rgb(0,0,0,0);border-image: url(:/Breeze-Dark/play.svg);")
         pause_dic[str(self.gid)] = self.StartPause
         self.Cancel = QtWidgets.QPushButton(task)
         self.Cancel.setGeometry(QtCore.QRect(790, 15, 40, 40))
